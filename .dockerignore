@@ -8,7 +8,4 @@ __pycache__/
 .python-version
 uv.lock
 pyproject.toml
-requirements-deploy.txt
-Dockerfile
-.dockerignore
 README.md
