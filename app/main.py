@@ -1,41 +1,22 @@
-import chromadb
+import os
 from fastapi import FastAPI
 from pydantic import BaseModel
-from openai import OpenAI
-from dotenv import load_dotenv
+from app.rag import build_hybrid_retriever, make_llm, answer
 
-load_dotenv()
-client = OpenAI()
+EMBED_MODEL = os.getenv("EMBED_MODEL", "openai")
 
-chroma = chromadb.PersistentClient(path="./chroma_db")
-collection = chroma.get_or_create_collection("docs")
+retriever = build_hybrid_retriever(EMBED_MODEL, k=3)
+llm = make_llm()
 
 app = FastAPI()
+
 
 class Query(BaseModel):
     question: str
 
+
 @app.post("/query")
 def query(q: Query):
-    q_emb = client.embeddings.create(
-        model="text-embedding-3-small", input=[q.question]
-    ).data[0].embedding
-
-    results = collection.query(query_embeddings=[q_emb], n_results=4)
-    chunks = results["documents"][0]
-    sources = [m["source"] for m in results["metadatas"][0]]
-    context = "\n\n".join(chunks)
-
-    prompt = (
-        "Answer the question using only the context below. "
-        "If the answer isn't in the context, say so.\n\n"
-        f"Context:\n{context}\n\nQuestion: {q.question}"
-    )
-    completion = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return {
-        "answer": completion.choices[0].message.content,
-        "sources": sorted(set(sources)),
-    }
+    text, docs = answer(q.question, retriever, llm)
+    sources = sorted({os.path.basename(d.metadata.get("source", "unknown")) for d in docs})
+    return {"answer": text, "sources": sources}

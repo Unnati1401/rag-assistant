@@ -1,0 +1,452 @@
+[
+  {
+    "id": 1,
+    "question": "How do you declare a path parameter in FastAPI?",
+    "reference_answer": "Include it in the path string using curly braces, e.g. @app.get('/items/{item_id}'), and add a function parameter with the same name. You can add a type hint like item_id: int for validation and conversion.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 2,
+    "question": "What happens when you add a type hint like item_id: int to a path parameter?",
+    "reference_answer": "FastAPI uses the type hint to validate and convert the incoming value to that type. Invalid values (e.g. non-integers) produce an automatic validation error.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 3,
+    "question": "How does FastAPI decide that a function parameter is a query parameter?",
+    "reference_answer": "Any function parameter that is not part of the path is interpreted as a query parameter. These are the key-value pairs after the ? in the URL.",
+    "expected_sources": [
+      "query-params.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 4,
+    "question": "How do you make a query parameter optional?",
+    "reference_answer": "Give it a default value (for example = None). Parameters with a default are optional; parameters without a default are required.",
+    "expected_sources": [
+      "query-params.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 5,
+    "question": "How do you declare a request body in FastAPI?",
+    "reference_answer": "Declare a Pydantic model and use it as the type of a function parameter. FastAPI reads the request body as JSON, validates it against the model, and gives you the parsed instance.",
+    "expected_sources": [
+      "body.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 6,
+    "question": "What library does FastAPI use to validate request body data?",
+    "reference_answer": "Pydantic. Request body schemas are declared as Pydantic models.",
+    "expected_sources": [
+      "body.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 7,
+    "question": "What does the response_model parameter do?",
+    "reference_answer": "It declares the type/schema for the response. FastAPI uses it to validate and serialize (filter) the output data and to document the response in the OpenAPI schema.",
+    "expected_sources": [
+      "response-model.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 8,
+    "question": "Can response_model remove fields from the returned data?",
+    "reference_answer": "Yes. FastAPI limits and filters the output to the fields declared in the response_model, so fields not in the model are excluded from the response.",
+    "expected_sources": [
+      "response-model.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 9,
+    "question": "What interactive API documentation does FastAPI provide automatically?",
+    "reference_answer": "FastAPI serves interactive docs at /docs (Swagger UI) and alternative docs at /redoc (ReDoc), both generated from the automatic OpenAPI schema.",
+    "expected_sources": [
+      "first-steps.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 10,
+    "question": "What are some key features of FastAPI?",
+    "reference_answer": "High performance, fast to code, fewer bugs, automatic interactive documentation, based on standard Python type hints, and standards-based (OpenAPI and JSON Schema), with built-in data validation via Pydantic.",
+    "expected_sources": [
+      "features.html"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 11,
+    "question": "In what order should you declare fixed paths versus paths with parameters, and why?",
+    "reference_answer": "Declare fixed paths (like /users/me) before paths with a path parameter (like /users/{user_id}). Otherwise the path parameter route would also match the fixed path and capture it instead.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 12,
+    "question": "How can you declare a path parameter that itself contains a path with slashes, like a file path?",
+    "reference_answer": "Use the Starlette path convertor in the route, e.g. /files/{file_path:path}. The :path tells it to match any path including slashes.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 13,
+    "question": "How do you restrict a path parameter to a fixed set of allowed values?",
+    "reference_answer": "Declare the parameter's type as an Enum (a subclass of str and Enum). FastAPI then only accepts the enum's defined values and documents them.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 14,
+    "question": "How does FastAPI turn the string in a URL into a real Python integer?",
+    "reference_answer": "Through the parameter's type hint. When a parameter is declared as int, FastAPI parses and converts the incoming string, and rejects values that are not valid integers with a validation error.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 15,
+    "question": "How are boolean query parameters handled from the URL?",
+    "reference_answer": "If a parameter is typed as bool, FastAPI converts common truthy string values (like true, 1, on, yes) to True and others to False, so the URL string is parsed into a real boolean.",
+    "expected_sources": [
+      "query-params.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 16,
+    "question": "How do you make a query parameter required rather than optional?",
+    "reference_answer": "Do not give it a default value. A query parameter with no default is required, and FastAPI returns an error if it is missing.",
+    "expected_sources": [
+      "query-params.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 17,
+    "question": "How do you combine a path parameter, a query parameter, and a request body in a single endpoint?",
+    "reference_answer": "Declare all three as function parameters: the one matching the path is the path parameter, a parameter with a Pydantic model type is the body, and any remaining simple parameter is a query parameter. FastAPI recognizes each by these rules.",
+    "expected_sources": [
+      "body.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 18,
+    "question": "How can you prevent sensitive fields like a password from being returned in the response?",
+    "reference_answer": "Use a separate response_model (e.g. an output model without the password field). FastAPI filters the output to the response_model, so fields not in it, such as the password, are never returned.",
+    "expected_sources": [
+      "response-model.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 19,
+    "question": "What does response_model_exclude_unset do?",
+    "reference_answer": "It makes the response include only the fields that were actually set, omitting fields left at their default values, so defaults are not returned unnecessarily.",
+    "expected_sources": [
+      "response-model.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 20,
+    "question": "Why does FastAPI give good editor support like autocompletion?",
+    "reference_answer": "Because it is based on standard Python type hints, editors can provide autocompletion and type checks everywhere, which also reduces bugs. This is one of FastAPI's stated features.",
+    "expected_sources": [
+      "features.html"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 21,
+    "question": "What open standards is FastAPI based on?",
+    "reference_answer": "FastAPI is based on and fully compatible with open standards for APIs: OpenAPI (formerly Swagger) and JSON Schema.",
+    "expected_sources": [
+      "features.html"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 22,
+    "question": "What decorator and HTTP method are used in the most basic FastAPI example?",
+    "reference_answer": "A path operation decorator on the app instance for the GET method, i.e. @app.get('/'), placed above the function that handles the request.",
+    "expected_sources": [
+      "first-steps.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 23,
+    "question": "Can a FastAPI path operation function be asynchronous?",
+    "reference_answer": "Yes. The function can be defined with async def (or with a normal def). FastAPI supports both.",
+    "expected_sources": [
+      "first-steps.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 24,
+    "question": "What command runs a FastAPI application during development?",
+    "reference_answer": "Run it in development with the FastAPI CLI: `fastapi dev` (optionally with a path, e.g. `fastapi dev main.py`). This starts a development server with auto-reload.",
+    "expected_sources": [
+      "first-steps.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 25,
+    "question": "If a client sends body data that does not match the Pydantic model, what does FastAPI do?",
+    "reference_answer": "FastAPI reads and validates the body against the Pydantic model; if the data is invalid it returns a clear error indicating exactly where and what was wrong.",
+    "expected_sources": [
+      "body.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 26,
+    "question": "What syntax do you use to declare a path parameter?",
+    "reference_answer": "The same syntax as Python format strings: put the parameter name in curly braces in the path, e.g. /items/{item_id}. Its value is passed to the function argument of the same name.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 27,
+    "question": "If a path parameter has no type annotation, what type does your function receive?",
+    "reference_answer": "A string. For example /items/foo returns {\"item_id\":\"foo\"} - without a type declaration the value stays a string.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 28,
+    "question": "How do you get the actual string value of an Enum path parameter?",
+    "reference_answer": "Use the .value attribute, e.g. model_name.value (or ModelName.lenet.value). The path parameter is an enumeration member, and .value gives the underlying string.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 29,
+    "question": "What happens if you return Enum members from a path operation?",
+    "reference_answer": "They are converted to their corresponding values (strings in the example) before being returned to the client, even when nested in a JSON body like a dict.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 30,
+    "question": "What kind of validation error does FastAPI return when an int path parameter receives a non-integer like 'foo'?",
+    "reference_answer": "An int_parsing error stating the input should be a valid integer, with the location pointing to the path parameter. It is returned as a clear HTTP error.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 31,
+    "question": "Why should an Enum used for a path parameter inherit from str?",
+    "reference_answer": "So the API docs know the values are of type string and can render them correctly.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 32,
+    "question": "In a query string, what character separates the key-value pairs?",
+    "reference_answer": "The & character. Query parameters are the key-value pairs after the ? in the URL, separated by &.",
+    "expected_sources": [
+      "query-params.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 33,
+    "question": "Query parameters arrive as strings; how do they end up as an int in your function?",
+    "reference_answer": "Because they are part of the URL they are naturally strings, but when you declare them with a Python type like int, FastAPI converts them to that type and validates them.",
+    "expected_sources": [
+      "query-params.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 34,
+    "question": "What error does FastAPI return when a required query parameter is missing?",
+    "reference_answer": "A 'missing' validation error with the message 'Field required', with the location pointing to the query parameter.",
+    "expected_sources": [
+      "query-params.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 35,
+    "question": "Do path and query parameters have to be declared in a specific order?",
+    "reference_answer": "No. You can declare multiple path and query parameters at the same time in any order; FastAPI detects which is which by name.",
+    "expected_sources": [
+      "query-params.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 36,
+    "question": "How do you pass a file path that itself starts with a leading slash to a {file_path:path} parameter?",
+    "reference_answer": "Use a double slash between the fixed part and the path, e.g. /files//home/johndoe/myfile.txt, so file_path becomes /home/johndoe/myfile.txt.",
+    "expected_sources": [
+      "path-params.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 37,
+    "question": "Which HTTP methods are appropriate for sending a request body?",
+    "reference_answer": "POST (the most common), PUT, DELETE, or PATCH. Sending a body with GET is discouraged and has undefined behavior.",
+    "expected_sources": [
+      "body.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 38,
+    "question": "What does Swagger UI do with the request body documentation for a GET request?",
+    "reference_answer": "It will not show the body documentation for GET, because sending a body with GET is discouraged and has undefined behavior.",
+    "expected_sources": [
+      "body.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 39,
+    "question": "When a function has several parameters, how does FastAPI decide which is the body, which is a path param, and which is a query param?",
+    "reference_answer": "A parameter also named in the path is a path parameter; a parameter whose type is a Pydantic model is the request body; a parameter of a singular type (int, float, str, bool, etc.) is a query parameter.",
+    "expected_sources": [
+      "body.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 40,
+    "question": "How do you make a field in a request body model optional?",
+    "reference_answer": "Give the attribute a default value; if it has a default it is not required. Use None to make it optional.",
+    "expected_sources": [
+      "body.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 41,
+    "question": "How can you declare the response type without using the response_model parameter?",
+    "reference_answer": "Annotate the path operation function's return type. FastAPI uses the return type annotation to validate, serialize, filter, and document the response.",
+    "expected_sources": [
+      "response-model.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 42,
+    "question": "If you declare both a return type annotation and a response_model, which one does FastAPI use?",
+    "reference_answer": "The response_model takes priority and is used by FastAPI.",
+    "expected_sources": [
+      "response-model.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 43,
+    "question": "What does response_model=None do?",
+    "reference_answer": "It disables creating a response model for that path operation, useful when you annotate types that are not valid Pydantic fields.",
+    "expected_sources": [
+      "response-model.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 44,
+    "question": "How do you keep a user's password out of the response while still accepting it as input?",
+    "reference_answer": "Use separate models: an input model that includes the password and an output model (used as the response_model) that does not. FastAPI filters out any data not in the output model.",
+    "expected_sources": [
+      "response-model.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 45,
+    "question": "What does FastAPI do if your function returns data that does not match the declared response type, such as a missing field?",
+    "reference_answer": "It returns a server error rather than sending incorrect data, because it validates the returned data against the declared type.",
+    "expected_sources": [
+      "response-model.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 46,
+    "question": "What does FastAPI use to serialize the response, and why is it fast?",
+    "reference_answer": "Pydantic, which is written in Rust, so serialization is much faster.",
+    "expected_sources": [
+      "response-model.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 47,
+    "question": "How can class inheritance give you both editor/tooling support and FastAPI's data filtering?",
+    "reference_answer": "Annotate the return type as a base model while actually returning a subclass (e.g. return a UserIn where UserIn subclasses BaseUser). Tools accept it because the subclass is a valid base type, and FastAPI still filters the output to only the fields of the declared type.",
+    "expected_sources": [
+      "response-model.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 48,
+    "question": "What are the four common HTTP methods and their typical CRUD use in FastAPI?",
+    "reference_answer": "POST to create data, GET to read data, PUT to update data, and DELETE to delete data.",
+    "expected_sources": [
+      "first-steps.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 49,
+    "question": "Where do you configure the app entrypoint so the fastapi command can find your app?",
+    "reference_answer": "In pyproject.toml under [tool.fastapi], e.g. entrypoint = \"main:app\", which tells the fastapi command to import the app like 'from main import app'.",
+    "expected_sources": [
+      "first-steps.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 50,
+    "question": "What single command deploys a FastAPI app to FastAPI Cloud?",
+    "reference_answer": "fastapi deploy - it detects your FastAPI app and deploys it to the cloud.",
+    "expected_sources": [
+      "first-steps.md"
+    ],
+    "difficulty": "medium"
+  }
+]
