@@ -1,0 +1,6 @@
+# Corpus files are third-party content (downloaded docs), not authored source.
+# Exclude them from GitHub's language statistics.
+data/** linguist-vendored
+
+# Treat the experiment log and README as documentation.
+eval/experiment_log.md linguist-documentation
