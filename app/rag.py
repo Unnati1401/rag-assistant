@@ -24,7 +24,7 @@ def get_embeddings(kind):
         raise ValueError(f"Unknown embedding kind: {kind!r} (use 'openai' or 'hf')")
 
 
-def build_retriever(kind=DEFAULT_EMBED_MODEL, k=4, persist_directory="./chroma_db"):
+def build_retriever(kind=DEFAULT_EMBED_MODEL, k=3, persist_directory="./chroma_db"):
     """Retriever pointed at the collection matching the embedding model."""
     embeddings, collection_name = get_embeddings(kind)
     vectorstore = Chroma(

@@ -1,11 +1,11 @@
 import os
 from fastapi import FastAPI
 from pydantic import BaseModel
-from app.rag import build_retriever, make_llm, answer
+from app.rag import build_hybrid_retriever, make_llm, answer
 
 EMBED_MODEL = os.getenv("EMBED_MODEL", "openai")
 
-retriever = build_retriever(EMBED_MODEL, k=4)
+retriever = build_hybrid_retriever(EMBED_MODEL, k=3)
 llm = make_llm()
 
 app = FastAPI()
