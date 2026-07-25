@@ -48,12 +48,6 @@ uv run python -m eval.retrieval_eval --verbose
 - CAVEAT: 10 questions is a small, noisy sample. Do not over-conclude "MiniLM
   is better." Need a larger golden set (target 25-30) to be confident.
 
-**Next actions:**
-- [ ] Expand golden set to 25-30 questions for statistical reliability.
-- [ ] Add answer-quality scoring (LLM-as-judge: correctness + faithfulness).
-- [ ] Re-run and compare once the set is larger.
-
----
 
 ## Experiment 2 — Answer-quality baseline (LLM-as-judge)
 
@@ -81,18 +75,6 @@ uv run python -m eval.answer_eval --verbose
 - All scores are high (4.0-4.6), i.e. the metrics are saturated. With only 10
   fairly easy questions there is little room to discriminate. Need a larger,
   harder golden set before these numbers can meaningfully move.
-
-**Next actions:**
-- [x] Expand golden set to 25 questions incl. harder / cross-doc / edge cases.
-- [ ] Re-run retrieval + answer eval on the 25-question set.
-- [ ] Begin Week 5 tuning (chunk size, k, hybrid search, reranker) against the
-      larger set.
-
----
-
-## Experiment 3 — (pending: re-run on 25-question set)
-
-_To be filled after re-running both harnesses on the expanded golden set._
 
 ## Experiment 3 — Corrected baseline on 25-question set
 
@@ -127,16 +109,6 @@ _To be filled after re-running both harnesses on the expanded golden set._
   moderate retrieval differences on this corpus.
 - Correctness rose vs Exp 2 (4.25/4.29 -> 4.36/4.40) purely from fixing the two
   bad reference answers. Lesson: bad ground truth silently depresses metrics.
-
-**This is the locked Week 4 baseline. Week 5 tuning measured against it.**
-
-**Next actions (Week 5 — each a logged experiment):**
-- [ ] Chunk size sweep (500 / 800 / 1200) — expected to move precision.
-- [ ] k sweep (3 / 4 / 6) — precision vs recall tradeoff.
-- [ ] Hybrid search (keyword + vector) — target openai's recall misses.
-- [ ] Reranker (cross-encoder) — expected to improve MRR.
-
----
 
 ## Experiment 4 — Expanded 50-question baseline (THE baseline)
 
@@ -173,15 +145,6 @@ resolution to trust smaller movements, while still being hand-verifiable.
 across every set size, and at adequate n it also wins ranking and answer quality.
 hf's advantage is only marginally higher recall. Leaning openai as the default.
 
-**This 50-question set is the locked baseline for all Week 5 tuning.**
-
-**Next actions (Week 5):**
-- [ ] k sweep (3 / 4 / 6) on openai.
-- [ ] chunk-size sweep (500 / 800 / 1200) — requires re-ingest per size.
-- [ ] hybrid search (keyword + vector).
-- [ ] cross-encoder reranker.
-
----
 
 ## Experiment 5 — k sweep (retrieval), openai vs hf, k in {3,4,6}
 
@@ -221,9 +184,6 @@ to 3 for a precision gain (0.775 -> 0.82) at zero recall cost."
 
 **Change applied:** `build_retriever` default k 4 -> 3 in `app/rag.py`.
 
-**Next:** chunk-size sweep (500 / 800 / 1200) — requires re-ingesting each size.
-
----
 
 ## Experiment 5 — k sweep (retrieval, k = 3 / 4 / 6)
 
@@ -256,14 +216,12 @@ uv run python -m eval.retrieval_eval --models hf --ks 3 4 6
 **Decision: set default k = 3.** Keeps full recall, maximizes precision, feeds
 the LLM less noise. Applied to build_retriever default.
 
-**Important caveat (interview framing):** this holds because the corpus is tiny
+**Important caveat:** this holds because the corpus is tiny
 (6 docs) and answers are concentrated, so recall saturates early. On a large
 corpus recall typically climbs with k and k=3 vs k=6 becomes a real
 recall/precision tradeoff. The honest takeaway is "recall saturates early on
 this corpus, so small k maximizes precision at no recall cost" - NOT "k=3 is
 universally best."
-
----
 
 ## Experiment 6 — chunk-size sweep (500 / 800 / 1200)
 
@@ -316,10 +274,6 @@ universally best."
 **Decision: adopt hybrid+rerank as the production retriever.** Wired into
 app/rag.py (build_hybrid_rerank_retriever) and used by the FastAPI app.
 
-**Interview narrative:** hybrid buys recall, rerank buys back the precision hybrid
-costs; together they dominate every single-strategy config. Measured, not assumed.
-
----
 
 ## Summary — tuning journey (Week 5)
 
@@ -331,5 +285,47 @@ costs; together they dominate every single-strategy config. Measured, not assume
 
 Net: recall 0.960 -> 1.000, precision 0.775 -> 0.820, MRR 0.917 -> 0.943, all
 driven by measured experiments against a 50-question golden set.
+
+---
+
+## Experiment 8 — Multi-source grounding: docs vs web vs both
+
+**Feature:** user-selectable grounding source (docs / web / both) on `/query`,
+mirroring how Gemini/ChatGPT expose web grounding as a user control.
+**Eval set:** 10 questions requiring current/web info NOT in the local corpus
+(`eval/web_golden.json`). **Web:** Tavily. **Judge:** gpt-4o-mini (JSON mode).
+
+**Command:** `uv run python -m eval.web_eval --verbose`
+
+| mode | answered_rate | avg_faithfulness | url_source_rate | avg_sources |
+|------|---------------|------------------|-----------------|-------------|
+| docs | 0.20          | 5.00             | 0.00            | 5.8         |
+| web  | 0.90          | 5.00             | 1.00            | 3.0         |
+| both | 0.80          | 5.00             | 1.00            | 8.8         |
+
+**Finding — the core contrast validates the feature:**
+- docs-only correctly REFUSES 8/10 (answers aren't in the corpus). Refusal is
+  correct grounded behavior, not failure - no hallucination.
+- web answers 90% with a URL source on every answer, faithfulness 5.00.
+- Faithfulness = 5.00 across all modes: whenever the system answered, it stayed
+  grounded in retrieved context. No fabrication.
+
+**Honest observations:**
+- The 2 questions docs answered (q9, q10, FastAPI Cloud) are actually mentioned
+  in first-steps.md, so they weren't purely web-requiring.
+- web refused q8 (alternatives to FastAPI): search didn't surface a clean list,
+  so the model refused rather than inventing - good behavior.
+- both underperformed web on answered_rate (0.80 vs 0.90) and gave one muddled
+  answer (q4): fusing doc + web context can dilute focus. More sources (8.8) is
+  not always better.
+- Web answers were only as accurate as the search results: some stale facts
+  surfaced (e.g. an outdated minimum Python version). Web grounding inherits the
+  quality of the underlying search index - a real limitation, not a bug in the
+  pipeline.
+
+**Takeaway:** docs grounding refuses safely; web grounding answers with
+citations; both trades focus for coverage. Exposing the choice to the user
+(rather than auto-routing) avoids mis-route risk and matches production
+assistants - the measured comparison is what justifies offering all three.
 
 ---

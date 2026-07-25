@@ -21,6 +21,9 @@ part is knowing whether it actually works. This project includes:
 - A **measured tuning journey** - retriever, k, chunk size, and hybrid/reranking
   strategies were each chosen by experiment, not by guesswork
   (see [`eval/experiment_log.md`](eval/experiment_log.md)).
+- **User-selectable multi-source grounding** (docs / web / both) with a simple
+  frontend, mirroring how production assistants (Gemini, ChatGPT) expose web
+  search as a user control.
 
 ## Architecture
 
@@ -70,6 +73,38 @@ rather than the model's own knowledge.
 | → k=3                  | 0.960  | 0.820     | 0.917 |
 | → hybrid+rerank        | 1.000  | 0.820     | 0.943 |
 
+## Multi-source grounding
+
+The answer's grounding source is **user-selectable** per request - via a toggle
+in the frontend or a `source` field on `/query`:
+
+- **docs** - local corpus only (hybrid vector + BM25)
+- **web** - live web search only (Tavily)
+- **both** - docs + web fused
+
+This mirrors how Gemini and ChatGPT expose web grounding as a user control,
+rather than hiding it behind an automatic router. The rationale: the user knows
+their intent better than a router can infer it, there is no mis-route failure
+mode, and it is fully transparent.
+
+**Measured on 10 questions that require current/web info not in the corpus:**
+
+| mode | answered | faithfulness | url sources |
+|------|----------|--------------|-------------|
+| docs | 0.20     | 5.00         | 0.00        |
+| web  | 0.90     | 5.00         | 1.00        |
+| both | 0.80     | 5.00         | 1.00        |
+
+On questions whose answers are not in the corpus, docs-only grounding correctly
+**refuses** (grounded behavior, not hallucination), while web grounding answers
+with cited URLs. Faithfulness stays at 5.00 across all modes - the system never
+fabricates beyond what it retrieved. (Web answers are only as accurate as the
+underlying search results, which is an inherent limitation of web grounding.)
+
+This is the open-source, user-controlled analogue of the "expanding grounding
+choice" pattern described in
+[Google's Gemini Enterprise grounding announcement](https://developers.googleblog.com/expanding-choice-in-gemini-enterprise-agent-platform-introducing-grounding-with-parallel-web-search/).
+
 ## Tech stack
 
 - **API:** FastAPI, Uvicorn
@@ -79,6 +114,7 @@ rather than the model's own knowledge.
   HuggingFace `all-MiniLM-L6-v2`)
 - **Generation:** OpenAI `gpt-4o-mini`
 - **Keyword search:** BM25 (`rank-bm25`)
+- **Web grounding:** Tavily search API
 - **Reranker (local):** cross-encoder `ms-marco-MiniLM-L-6-v2`
 - **Deploy:** Docker, Render
 - **Tooling:** `uv`
@@ -90,7 +126,7 @@ rag-assistant/
 ├── app/
 │   ├── ingest.py            # load → chunk → embed → store (+ startup indexing)
 │   ├── rag.py               # retrievers, LLM, prompt, answer pipeline
-│   └── main.py              # FastAPI app (/query, /health)
+│   └── main.py              # FastAPI app (/query, /health, / frontend)
 ├── data/                    # corpus: markdown, PDF, HTML
 ├── eval/
 │   ├── golden.json          # 50-question golden set
@@ -98,6 +134,8 @@ rag-assistant/
 │   ├── answer_eval.py       # LLM-as-judge (correctness, faithfulness)
 │   ├── chunk_sweep.py       # chunk-size experiment
 │   ├── retriever_compare.py # vector vs hybrid vs rerank
+│   ├── web_eval.py          # docs vs web vs both grounding
+│   ├── web_golden.json      # web-requiring question set
 │   └── experiment_log.md    # full record of every experiment
 ├── Dockerfile
 ├── requirements-deploy.txt
@@ -122,7 +160,11 @@ uv run python -m app.ingest
 uv run python -m uvicorn app.main:app --reload
 ```
 
-Open http://127.0.0.1:8000/docs and try `POST /query`.
+Open http://127.0.0.1:8000/ for the frontend (prompt box + docs/web/both
+toggle), or http://127.0.0.1:8000/docs for the API.
+
+For web grounding, add a Tavily key: `echo "TAVILY_API_KEY=tvly-..." >> .env`
+(without it, web/both modes fall back to docs).
 
 **Run the evaluation:**
 

@@ -70,6 +70,35 @@ def build_hybrid_retriever(kind=DEFAULT_EMBED_MODEL, k=3, persist_directory="./c
     return EnsembleRetriever(retrievers=[vector, bm25], weights=[0.5, 0.5])
 
 
+def build_web_retriever(k=3):
+    """Live web search retriever (Tavily). Returns Documents whose metadata
+    'source' is the result URL, so citations work like document sources.
+    Requires TAVILY_API_KEY in the environment."""
+    from langchain_community.retrievers import TavilySearchAPIRetriever
+    return TavilySearchAPIRetriever(k=k)
+
+
+def build_grounded_retriever(source="docs", kind=DEFAULT_EMBED_MODEL, k=3):
+    """User-selectable grounding source:
+      - "docs": local corpus only (hybrid vector + BM25)
+      - "web":  live web search only (Tavily)
+      - "both": docs + web fused, the multi-source grounding mode
+    Mirrors how production assistants expose web grounding as a user control."""
+    from langchain_classic.retrievers import EnsembleRetriever
+
+    if source == "docs":
+        return build_hybrid_retriever(kind, k=k)
+    if source == "web":
+        return build_web_retriever(k=k)
+    if source == "both":
+        docs_retriever = build_hybrid_retriever(kind, k=k)
+        web_retriever = build_web_retriever(k=k)
+        return EnsembleRetriever(
+            retrievers=[docs_retriever, web_retriever], weights=[0.5, 0.5]
+        )
+    raise ValueError(f"Unknown source: {source!r} (use 'docs', 'web', or 'both')")
+
+
 def build_hybrid_rerank_retriever(
     kind=DEFAULT_EMBED_MODEL, top_k=3, wide_k=10, persist_directory="./chroma_db"
 ):

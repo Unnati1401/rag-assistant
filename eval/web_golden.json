@@ -1,0 +1,12 @@
+[
+  {"id": 1, "question": "What is the latest stable version of FastAPI?", "note": "version number is current/volatile, not in the tutorial corpus"},
+  {"id": 2, "question": "Who is the original creator of FastAPI?", "note": "author's name is not stated in the tutorial corpus"},
+  {"id": 3, "question": "What open-source license is FastAPI distributed under?", "note": "license not mentioned in the tutorial docs"},
+  {"id": 4, "question": "Approximately how many GitHub stars does the FastAPI repository have?", "note": "volatile external fact"},
+  {"id": 5, "question": "What is the latest major version of Pydantic?", "note": "current version, not in corpus"},
+  {"id": 6, "question": "In what year was FastAPI first released?", "note": "historical fact not in the tutorial corpus"},
+  {"id": 7, "question": "What is the minimum Python version required by the latest FastAPI?", "note": "current requirement, not in corpus"},
+  {"id": 8, "question": "What are some popular alternatives to FastAPI for building Python APIs?", "note": "external comparison not in corpus"},
+  {"id": 9, "question": "Who sponsors or funds the development of FastAPI?", "note": "external fact not in the tutorial corpus"},
+  {"id": 10, "question": "What is FastAPI Cloud?", "note": "recent product; corpus mentions it exists but not details"}
+]
