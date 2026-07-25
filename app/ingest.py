@@ -6,18 +6,13 @@ from langchain_chroma import Chroma
 
 load_dotenv()
 
-# Which embedding model to use: "openai" or "hf". Reads from env, defaults to openai.
 EMBED_MODEL = os.getenv("EMBED_MODEL", "openai")
+CHUNK_SIZE = 800
+CHUNK_OVERLAP = 100
 
 
 def get_embeddings(kind):
-    """Return (embeddings, collection_name).
-
-    Each model gets its own collection because vector dimensions differ
-    (OpenAI text-embedding-3-small = 1536, MiniLM = 384) and a Chroma
-    collection is locked to a single dimension. Separate collections are
-    what let Week 4 compare the two models head-to-head.
-    """
+    """model -> (embeddings, collection_name). Mirrors rag.get_embeddings."""
     if kind == "openai":
         from langchain_openai import OpenAIEmbeddings
         return OpenAIEmbeddings(model="text-embedding-3-small"), "docs_openai"
@@ -45,33 +40,46 @@ def load_docs(data_dir="data"):
         else:
             print(f"Skipping unsupported file: {path}")
             continue
-        loaded = loader.load()
-        docs.extend(loaded)
-        print(f"Loaded {len(loaded)} doc(s) from {os.path.basename(path)}")
+        docs.extend(loader.load())
     return docs
 
 
-def main():
-    embeddings, collection_name = get_embeddings(EMBED_MODEL)
-
+def ingest(kind=EMBED_MODEL, persist_directory="./chroma_db"):
+    """Load, chunk, embed, and store the corpus. Resets the collection first so
+    re-running does not pile up duplicates. Returns the number of chunks."""
+    embeddings, collection_name = get_embeddings(kind)
     docs = load_docs()
-    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
-    chunks = splitter.split_documents(docs)
+    chunks = RecursiveCharacterTextSplitter(
+        chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP
+    ).split_documents(docs)
 
     vs = Chroma(
         collection_name=collection_name,
         embedding_function=embeddings,
-        persist_directory="./chroma_db",
+        persist_directory=persist_directory,
     )
-    # Clean slate so re-running does not pile up duplicate chunks.
     vs.reset_collection()
     vs.add_documents(chunks)
+    print(f"[{kind}] Indexed {len(chunks)} chunks into '{collection_name}'.")
+    return len(chunks)
 
-    print(
-        f"[{EMBED_MODEL}] Indexed {len(chunks)} chunks "
-        f"from {len(docs)} loaded docs into '{collection_name}'."
+
+def ensure_indexed(kind=EMBED_MODEL, persist_directory="./chroma_db"):
+    """Index only if the collection is empty. Used at app startup so a fresh
+    container (with no persisted DB) builds its index once, from the corpus."""
+    embeddings, collection_name = get_embeddings(kind)
+    vs = Chroma(
+        collection_name=collection_name,
+        embedding_function=embeddings,
+        persist_directory=persist_directory,
     )
+    count = vs._collection.count()
+    if count == 0:
+        print(f"Collection '{collection_name}' empty; indexing corpus...")
+        ingest(kind, persist_directory)
+    else:
+        print(f"Collection '{collection_name}' already has {count} chunks; skipping ingest.")
 
 
 if __name__ == "__main__":
-    main()
+    ingest()
