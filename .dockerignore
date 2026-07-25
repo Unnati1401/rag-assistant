@@ -1,0 +1,14 @@
+.venv/
+chroma_db/
+eval/
+__pycache__/
+*.pyc
+.env
+.git/
+.python-version
+uv.lock
+pyproject.toml
+requirements-deploy.txt
+Dockerfile
+.dockerignore
+README.md
