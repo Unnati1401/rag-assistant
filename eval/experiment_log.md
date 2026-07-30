@@ -329,3 +329,38 @@ citations; both trades focus for coverage. Exposing the choice to the user
 assistants - the measured comparison is what justifies offering all three.
 
 ---
+
+## Experiment 9 — OKF structured knowledge: does it improve retrieval?
+ 
+**Feature:** adopted Google's Open Knowledge Format (OKF, 2026) — atomic Markdown
+entries with YAML frontmatter (id, category, confidence, source) — in a separate
+`docs_okf` collection, plus metadata-filtered retrieval via Chroma where-clauses.
+**Compared on:** 40/50 golden questions whose topic has an OKF entry. OKF scored
+on `okf_id` (reliable identifier).
+ 
+**Command:** `uv run python -m eval.okf_compare`
+ 
+| corpus   | recall@k | precision@k | MRR   |
+|----------|----------|-------------|-------|
+| raw docs | 0.975    | 0.842       | 0.946 |
+| okf      | 0.800    | 0.267       | 0.775 |
+ 
+**Finding — OKF underperformed raw docs at this corpus size (honest negative):**
+- With only 4 short OKF entries, all terse FastAPI-parameter text, their
+  embeddings cluster tightly in vector space, so semantic ranking is near-random
+  (precision 0.267 ~ 1-of-4 relevant). Example: "how do you declare a request
+  body?" ranked response-model above request-body.
+- Raw docs win because verbose full-page text gives more distinguishing signal
+  per topic to embed against.
+**What DID work — metadata filtering (the capability OKF unlocks):**
+- Category filter (`category=routing`) returned exactly the routing entries,
+  confirming Chroma where-clause filtering over OKF metadata works.
+**Interpretation:** OKF's atomic structure needs corpus SCALE to pay off. At 4
+entries it hurts ranking; at scale, metadata filtering narrows the search space
+BEFORE semantic ranking, which is precisely what mitigates the clustering problem
+seen here. Structure alone is not enough - the metadata filtering is the lever,
+and it only bites on a large, categorized corpus.
+ 
+**Takeaway (interview framing):** implemented OKF + metadata-filtered retrieval,
+measured it honestly, and interpreted a negative result - OKF's value is
+scale-dependent, not automatic.

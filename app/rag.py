@@ -75,7 +75,12 @@ def build_web_retriever(k=3):
     'source' is the result URL, so citations work like document sources.
     Requires TAVILY_API_KEY in the environment."""
     from langchain_community.retrievers import TavilySearchAPIRetriever
-    return TavilySearchAPIRetriever(k=k)
+    return TavilySearchAPIRetriever(
+        k=k,
+        search_depth="advanced",        # better, more relevant results
+        include_raw_content=True,        # full page text, not just a snippet
+        include_generated_answer=True,   # Tavily's own grounded summary as a doc
+    )
 
 
 def build_grounded_retriever(source="docs", kind=DEFAULT_EMBED_MODEL, k=3):
@@ -126,6 +131,32 @@ def build_hybrid_rerank_retriever(
     return ContextualCompressionRetriever(base_compressor=reranker, base_retriever=hybrid)
 
 
+def build_okf_retriever(kind=DEFAULT_EMBED_MODEL, k=3, category=None,
+                        confidence=None, persist_directory="./chroma_db"):
+    """Retriever over the OKF collection (docs_okf) with optional metadata
+    filtering applied BEFORE semantic search, via Chroma's where clause.
+    Filtering by category/confidence removes off-target entries up front, which
+    is what OKF's structured metadata enables (vs. similarity-only retrieval)."""
+    embeddings, _ = get_embeddings(kind)
+    vs = Chroma(
+        collection_name="docs_okf",
+        embedding_function=embeddings,
+        persist_directory=persist_directory,
+    )
+    conditions = []
+    if category:
+        conditions.append({"category": category})
+    if confidence:
+        conditions.append({"confidence": confidence})
+
+    search_kwargs = {"k": k}
+    if len(conditions) == 1:
+        search_kwargs["filter"] = conditions[0]
+    elif len(conditions) > 1:
+        search_kwargs["filter"] = {"$and": conditions}
+    return vs.as_retriever(search_kwargs=search_kwargs)
+
+
 def make_llm(model="gpt-4o-mini", temperature=0):
     return ChatOpenAI(model=model, temperature=temperature)
 
@@ -133,9 +164,11 @@ def make_llm(model="gpt-4o-mini", temperature=0):
 _PROMPT = ChatPromptTemplate.from_messages([
     (
         "system",
-        "You are a helpful assistant. Answer the question using ONLY the "
-        "context provided. If the answer is not in the context, say you "
-        "don't know. Be concise.",
+        "You are a helpful assistant. Answer the question using the context and "
+        "sources provided. Synthesize across the sources; you do not need the "
+        "answer to appear word-for-word. Do not add facts that the sources do "
+        "not support. Only if the sources genuinely do not address the question "
+        "at all, say you don't know. Be concise.",
     ),
     ("human", "Context:\n{context}\n\nQuestion: {question}"),
 ])
