@@ -62,9 +62,10 @@ def main():
     parser.add_argument("--models", nargs="+", default=["openai", "hf"])
     parser.add_argument("--ks", nargs="+", type=int, default=[4])
     parser.add_argument("--verbose", action="store_true")
+    parser.add_argument("--golden", default="eval/golden.json")
     args = parser.parse_args()
 
-    golden = load_golden()
+    golden = load_golden(args.golden)
     print(f"Loaded {len(golden)} golden questions.\n")
 
     results = []

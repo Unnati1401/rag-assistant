@@ -364,3 +364,77 @@ and it only bites on a large, categorized corpus.
 **Takeaway (interview framing):** implemented OKF + metadata-filtered retrieval,
 measured it honestly, and interpreted a negative result - OKF's value is
 scale-dependent, not automatic.
+
+## Experiment 10 — Distractor robustness: FastAPI eval on the expanded corpus
+ 
+After adding ~29 Kubernetes docs (~6 -> ~36 documents), re-ran the FastAPI
+50-question eval to measure whether the new cross-domain distractors hurt
+retrieval on the original questions.
+ 
+**Retrieval (openai):**
+ 
+| setting            | recall@k | precision@k | MRR   |
+|--------------------|----------|-------------|-------|
+| baseline (pre-K8s, k=3) | 0.960 | 0.820   | 0.917 |
+| expanded (k=3)     | 0.960    | 0.787       | 0.927 |
+| expanded (k=4)     | 0.960    | 0.750       | 0.927 |
+ 
+**Answer quality (expanded):** correctness 4.80, faithfulness 4.84 (50/50).
+(Higher than Exp 4's 4.38/4.56 - reflects accumulated golden-answer fixes and
+the JSON-mode judge, not the K8s docs helping FastAPI answers.)
+ 
+**Finding:** expanding the corpus 6x cost only 0.033 precision at k=3
+(0.820 -> 0.787); recall held at 0.960 and MRR rose slightly. The K8s distractors
+rarely displace the correct FastAPI chunk - the two domains separate cleanly in
+embedding space. Retrieval is robust to cross-domain distractors.
+ 
+**Caveat:** this only evaluates the FastAPI half. The K8s docs themselves are
+still untested - a dedicated K8s golden set is needed to evaluate the new domain
+(next).
+ 
+---
+ 
+ ## Experiment 11 — Kubernetes domain evaluation (new corpus)
+ 
+Built a dedicated K8s golden set to evaluate the expanded domain (the FastAPI
+golden set doesn't cover Kubernetes). Added a `--golden` flag to the eval scripts
+to target different question sets.
+ 
+**Golden set:** 26 K8s questions (`eval/k8s_golden.json`) — 5 easy, 10 medium,
+11 hard, including 5 multi-doc questions (answer spans two docs) and cross-topic
+disambiguation (e.g. Deployment vs StatefulSet).
+ 
+**Command:**
+```
+uv run python -m eval.retrieval_eval --models openai --ks 3 --golden eval/k8s_golden.json
+uv run python -m eval.answer_eval --models openai --golden eval/k8s_golden.json
+```
+ 
+**Results:**
+ 
+| set                    | recall@k | precision@k | MRR   | correctness | faithfulness |
+|------------------------|----------|-------------|-------|-------------|--------------|
+| 18 easy/medium (initial) | 1.000  | 0.870       | 0.907 | 5.00        | 5.00         |
+| 26 incl. hard/multi-doc  | 0.942  | 0.872       | 0.936 | 5.00        | 5.00         |
+ 
+**Findings:**
+- On single-topic questions, retrieval is near-perfect: K8s docs are each a
+  distinct, self-contained concept, so they separate cleanly in embedding space
+  (unlike the more overlapping FastAPI param docs). Well-separated topics retrieve
+  better than semantically overlapping ones - a real retrieval insight.
+- Adding hard/multi-doc questions dropped recall 1.000 -> 0.942: the multi-doc
+  questions require BOTH relevant sources in the top-3, which is genuinely harder.
+  This is the eval doing its job - discriminating rather than saturating.
+- Precision rose slightly (0.870 -> 0.872) because multi-doc questions have two
+  relevant sources, so more of the top-3 is on-target.
+**Honest caveat:** answer quality is a flat 5.00 across easy and hard sets. The
+LLM knows Kubernetes well and questions map to clear docs, so the answer-quality
+metric is not discriminating here - retrieval metrics are the more informative
+signal for this domain. The K8s set (26) is also smaller than the FastAPI set (50).
+ 
+**Combined story (Exp 10 + 11):** the system scaled to a 6x-larger, two-domain
+corpus with no quality loss - FastAPI retrieval held (precision -0.03) and the new
+K8s domain evaluates strongly. Retrieval is robust to cross-domain distractors and
+generalizes to a new domain.
+ 
+---

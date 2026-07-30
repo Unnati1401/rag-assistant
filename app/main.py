@@ -6,6 +6,8 @@ from pydantic import BaseModel
 
 from app.ingest import ensure_indexed
 from app.rag import build_grounded_retriever, make_llm, answer
+from app.tasks import ingest_task, celery_app
+from celery.result import AsyncResult
 
 EMBED_MODEL = os.getenv("EMBED_MODEL", "openai")
 
@@ -48,6 +50,26 @@ def query(q: Query):
     text, docs = answer(q.question, retriever, _state["llm"])
     sources = sorted({d.metadata.get("source", "unknown") for d in docs})
     return {"answer": text, "sources": sources, "source_mode": source}
+
+
+@app.post("/ingest")
+def trigger_ingest():
+    """Enqueue an incremental ingestion job on the Celery/Redis queue.
+    Returns immediately with a task id; the worker processes it async."""
+    task = ingest_task.delay(EMBED_MODEL)
+    return {"task_id": task.id, "state": "queued"}
+
+
+@app.get("/ingest/status/{task_id}")
+def ingest_status(task_id: str):
+    """Report the state (and result, once done) of an ingestion job."""
+    res = AsyncResult(task_id, app=celery_app)
+    payload = {"task_id": task_id, "state": res.state}
+    if res.state == "SUCCESS":
+        payload["result"] = res.result
+    elif res.state == "FAILURE":
+        payload["error"] = str(res.result)
+    return payload
 
 
 @app.get("/", response_class=HTMLResponse)

@@ -1,0 +1,241 @@
+[
+  {
+    "id": 1,
+    "question": "What is a Kubernetes Deployment used for?",
+    "reference_answer": "A Deployment provides declarative updates for Pods and ReplicaSets; you describe a desired state and the Deployment controller changes the actual state to match at a controlled rate.",
+    "expected_sources": [
+      "workloads-controllers-deployment.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 2,
+    "question": "What does a ReplicaSet guarantee?",
+    "reference_answer": "A ReplicaSet maintains a stable set of replica Pods running at any given time, ensuring the specified number of identical Pods are available.",
+    "expected_sources": [
+      "workloads-controllers-replicaset.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 3,
+    "question": "What is a Kubernetes Service?",
+    "reference_answer": "A Service is an abstraction that defines a logical set of Pods and a policy by which to access them, giving them a stable network identity even as the Pods change.",
+    "expected_sources": [
+      "services-networking-service.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 4,
+    "question": "What is the purpose of an Ingress in Kubernetes?",
+    "reference_answer": "An Ingress manages external access to Services in a cluster, typically HTTP/HTTPS, providing routing rules, and often load balancing and TLS termination.",
+    "expected_sources": [
+      "services-networking-ingress.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 5,
+    "question": "What is a Pod in Kubernetes?",
+    "reference_answer": "A Pod is the smallest deployable unit in Kubernetes: one or more containers that share storage, network, and a specification for how to run them.",
+    "expected_sources": [
+      "workloads-pods-_index.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 6,
+    "question": "What are the phases of a Pod's lifecycle?",
+    "reference_answer": "A Pod's phase can be Pending, Running, Succeeded, Failed, or Unknown, representing where the Pod is in its lifecycle.",
+    "expected_sources": [
+      "workloads-pods-pod-lifecycle.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 7,
+    "question": "What is a ConfigMap used for?",
+    "reference_answer": "A ConfigMap stores non-confidential configuration data as key-value pairs, which Pods can consume as environment variables, command-line arguments, or files in a volume.",
+    "expected_sources": [
+      "configuration-configmap.md"
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": 8,
+    "question": "How does a Secret differ from a ConfigMap?",
+    "reference_answer": "A Secret is like a ConfigMap but intended for confidential data such as passwords, tokens, or keys, so sensitive information is not exposed in Pod specs or config data.",
+    "expected_sources": [
+      "configuration-secret.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 9,
+    "question": "What is a DaemonSet?",
+    "reference_answer": "A DaemonSet ensures that all (or some) nodes run a copy of a particular Pod, commonly used for node-level services like log collectors or monitoring agents.",
+    "expected_sources": [
+      "workloads-controllers-daemonset.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 10,
+    "question": "What is a StatefulSet used for?",
+    "reference_answer": "A StatefulSet manages the deployment and scaling of a set of Pods with stable, unique network identities and stable persistent storage, for stateful applications.",
+    "expected_sources": [
+      "workloads-controllers-statefulset.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 11,
+    "question": "What does a Kubernetes Job do?",
+    "reference_answer": "A Job creates one or more Pods and retries execution until a specified number of them successfully terminate, running a task to completion rather than continuously.",
+    "expected_sources": [
+      "workloads-controllers-job.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 12,
+    "question": "What is a PersistentVolume?",
+    "reference_answer": "A PersistentVolume is a piece of storage in the cluster provisioned by an administrator or dynamically, with a lifecycle independent of any individual Pod that uses it.",
+    "expected_sources": [
+      "storage-persistent-volumes.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 13,
+    "question": "What is the role of a StorageClass?",
+    "reference_answer": "A StorageClass describes the classes of storage available and enables dynamic provisioning of PersistentVolumes according to the parameters and provisioner it defines.",
+    "expected_sources": [
+      "storage-storage-classes.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 14,
+    "question": "What does a NetworkPolicy control?",
+    "reference_answer": "A NetworkPolicy specifies how groups of Pods are allowed to communicate with each other and with other network endpoints, controlling ingress and egress traffic at the Pod level.",
+    "expected_sources": [
+      "services-networking-network-policies.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 15,
+    "question": "What is the kube-scheduler responsible for?",
+    "reference_answer": "The kube-scheduler assigns newly created Pods to nodes, selecting an appropriate node based on resource requirements, constraints, affinity, and other factors.",
+    "expected_sources": [
+      "scheduling-eviction-kube-scheduler.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 16,
+    "question": "What are resource quotas used for in Kubernetes?",
+    "reference_answer": "A ResourceQuota constrains aggregate resource consumption per namespace, limiting the quantity of objects and the total compute resources (CPU, memory) that can be requested.",
+    "expected_sources": [
+      "policy-resource-quotas.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 17,
+    "question": "What is the purpose of namespaces in Kubernetes?",
+    "reference_answer": "Namespaces provide a mechanism for isolating groups of resources within a single cluster, useful for dividing cluster resources between multiple users or teams.",
+    "expected_sources": [
+      "overview-working-with-objects-namespaces.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 18,
+    "question": "What are labels used for in Kubernetes?",
+    "reference_answer": "Labels are key-value pairs attached to objects used to organize and select subsets of objects; selectors use them to identify and group resources.",
+    "expected_sources": [
+      "overview-working-with-objects-labels.md"
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": 19,
+    "question": "What is the difference between a Deployment and a StatefulSet?",
+    "reference_answer": "A Deployment manages stateless Pods that are interchangeable, while a StatefulSet manages stateful Pods with stable, unique network identities and stable persistent storage. Use StatefulSet when Pods need durable identity or ordered deployment.",
+    "expected_sources": [
+      "workloads-controllers-deployment.md",
+      "workloads-controllers-statefulset.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 20,
+    "question": "How do a Job and a CronJob relate?",
+    "reference_answer": "A Job runs a task to completion once, while a CronJob creates Jobs on a repeating schedule (like cron), so a CronJob is used for periodic or scheduled Jobs.",
+    "expected_sources": [
+      "workloads-controllers-cron-jobs.md",
+      "workloads-controllers-job.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 21,
+    "question": "When would you use a DaemonSet instead of a Deployment?",
+    "reference_answer": "Use a DaemonSet when you need a copy of a Pod running on every (or selected) node, such as node-level agents for logging or monitoring, rather than a set number of interchangeable replicas managed by a Deployment.",
+    "expected_sources": [
+      "workloads-controllers-daemonset.md",
+      "workloads-controllers-deployment.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 22,
+    "question": "How do a PersistentVolume and a StorageClass work together for dynamic provisioning?",
+    "reference_answer": "A StorageClass defines a provisioner and parameters for a class of storage; when a claim requests that class, a PersistentVolume is dynamically provisioned according to the StorageClass instead of being created manually by an administrator.",
+    "expected_sources": [
+      "storage-persistent-volumes.md",
+      "storage-storage-classes.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 23,
+    "question": "How can a Pod consume configuration from a ConfigMap and sensitive data from a Secret?",
+    "reference_answer": "Both can be consumed as environment variables or mounted as files in a volume; a ConfigMap holds non-confidential key-value config while a Secret holds confidential data like passwords or tokens, keeping sensitive values out of the Pod spec.",
+    "expected_sources": [
+      "configuration-configmap.md",
+      "configuration-secret.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 24,
+    "question": "How does the scheduler decide which node a Pod goes to?",
+    "reference_answer": "The kube-scheduler filters nodes that meet the Pod's requirements (resources, constraints, affinity/anti-affinity, taints/tolerations) and then scores the feasible nodes to pick the most suitable one.",
+    "expected_sources": [
+      "scheduling-eviction-kube-scheduler.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 25,
+    "question": "What is a container restart policy and what are its possible values?",
+    "reference_answer": "A Pod's restartPolicy controls whether containers are restarted; its values are Always, OnFailure, and Never.",
+    "expected_sources": [
+      "workloads-pods-pod-lifecycle.md"
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": 26,
+    "question": "What happens to a namespace's resources when limits are set with a LimitRange?",
+    "reference_answer": "A LimitRange sets default, minimum, and maximum compute resource constraints per Pod or container in a namespace, so objects without explicit requests/limits get defaults and objects exceeding the bounds are rejected.",
+    "expected_sources": [
+      "policy-limit-range.md"
+    ],
+    "difficulty": "hard"
+  }
+]
