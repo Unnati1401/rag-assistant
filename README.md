@@ -1,4 +1,4 @@
-# RAG Assistant — a *measured* retrieval-augmented QA system
+# RAG Assistant - a *measured* retrieval-augmented QA system
 
 A document question-answering system that retrieves relevant context and generates
 grounded, cited answers. Unlike most RAG demos, the focus here is **evaluation**:
@@ -6,7 +6,7 @@ every retrieval and tuning decision is backed by measured metrics on a 50-questi
 golden set, with a full experiment log.
 
 **Live demo:** https://rag-assistant-u985.onrender.com/docs
-*(free tier — the first request after idle may take 30–60s to wake)*
+*(free tier - the first request after idle may take 30–60s to wake)*
 
 ---
 
@@ -18,13 +18,13 @@ part is knowing whether it actually works. This project includes:
 - An **evaluation harness** with retrieval metrics (recall@k, precision@k, MRR)
   and an **LLM-as-judge** scoring answer correctness and faithfulness.
 - A **50-question golden set** with verified reference answers and expected sources.
-- A **measured tuning journey** — retriever, k, chunk size, and hybrid/reranking
+- A **measured tuning journey** - retriever, k, chunk size, and hybrid/reranking
   strategies were each chosen by experiment, not by guesswork
   (see [`eval/experiment_log.md`](eval/experiment_log.md)).
 - **User-selectable multi-source grounding** (docs / web / both) with a simple
   frontend, mirroring how production assistants (Gemini, ChatGPT) expose web
   search as a user control.
-- **Production ingestion pipeline** — incremental (hash-based) indexing behind an
+- **Production ingestion pipeline** - incremental (hash-based) indexing behind an
   async Celery + Redis task queue, so large corpora re-index efficiently without
   blocking the API.
 
@@ -85,7 +85,7 @@ rather than the model's own knowledge.
 | Kubernetes domain (26 Qs, k=3)    | 0.942  | 0.872     | 0.936 |
 
 Expanding the corpus 6x cost only 0.03 precision on the original FastAPI
-questions — the two domains separate cleanly in embedding space, so cross-domain
+questions - the two domains separate cleanly in embedding space, so cross-domain
 distractors rarely displace the correct chunk. The new Kubernetes domain (with a
 dedicated 26-question golden set including multi-doc questions) evaluates strongly
 on its own. Answer quality: FastAPI 4.80/4.84, Kubernetes 5.00/5.00
@@ -93,12 +93,12 @@ on its own. Answer quality: FastAPI 4.80/4.84, Kubernetes 5.00/5.00
 
 ## Multi-source grounding
 
-The answer's grounding source is **user-selectable** per request — via a toggle
+The answer's grounding source is **user-selectable** per request - via a toggle
 in the frontend or a `source` field on `/query`:
 
-- **docs** — local corpus only (hybrid vector + BM25)
-- **web** — live web search only (Tavily)
-- **both** — docs + web fused
+- **docs** - local corpus only (hybrid vector + BM25)
+- **web** - live web search only (Tavily)
+- **both** - docs + web fused
 
 This mirrors how Gemini and ChatGPT expose web grounding as a user control,
 rather than hiding it behind an automatic router. The rationale: the user knows
@@ -115,7 +115,7 @@ mode, and it is fully transparent.
 
 On questions whose answers are not in the corpus, docs-only grounding correctly
 **refuses** (grounded behavior, not hallucination), while web grounding answers
-with cited URLs. Faithfulness stays at 5.00 across all modes — the system never
+with cited URLs. Faithfulness stays at 5.00 across all modes - the system never
 fabricates beyond what it retrieved. (Web answers are only as accurate as the
 underlying search results, which is an inherent limitation of web grounding.)
 
@@ -127,10 +127,10 @@ choice" pattern described in
 
 Ingestion is built as a production-style pipeline rather than a one-off script:
 
-- **Incremental indexing** — each source file is content-hashed; only new or
+- **Incremental indexing** - each source file is content-hashed; only new or
   changed files are re-embedded and deleted files are pruned. Re-indexing an
   unchanged corpus embeds nothing.
-- **Async task queue** — `POST /ingest` enqueues a job on Redis and returns a
+- **Async task queue** - `POST /ingest` enqueues a job on Redis and returns a
   task id immediately; a separate Celery worker runs the incremental ingest with
   retries, and `GET /ingest/status/{id}` reports progress. This decouples slow
   ingestion from the request/response cycle and scales horizontally (add workers).
@@ -146,15 +146,15 @@ is a real efficiency win rather than over-engineering.
 
 ## Structured knowledge (OKF)
 
-Implemented Google's Open Knowledge Format (OKF, 2026) — atomic Markdown entries
-with YAML frontmatter (id, category, confidence, source) — as a separate,
+Implemented Google's Open Knowledge Format (OKF, 2026) - atomic Markdown entries
+with YAML frontmatter (id, category, confidence, source) - as a separate,
 metadata-tagged collection, enabling retrieval that filters by category or
 confidence (via Chroma where-clauses) *before* semantic ranking.
 
 Measured honestly against the raw-doc corpus, OKF *underperformed* at small scale
 (4 short entries cluster tightly in embedding space, hurting ranking). This is
 logged as a rigorous negative result: OKF's value is scale- and metadata-driven,
-not automatic — structure alone doesn't help until there are many entries per
+not automatic - structure alone doesn't help until there are many entries per
 category to filter across. OKF complements RAG (it standardizes knowledge); it
 does not replace retrieval.
 
