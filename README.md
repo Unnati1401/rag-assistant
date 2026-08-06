@@ -1,4 +1,4 @@
-# RAG Assistant - a *measured* retrieval-augmented QA system
+# GroundedRAG - a *measured* retrieval-augmented QA system
 
 A document question-answering system that retrieves relevant context and generates
 grounded, cited answers. Unlike most RAG demos, the focus here is **evaluation**:
